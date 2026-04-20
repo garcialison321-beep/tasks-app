@@ -9,15 +9,12 @@ import { errorMiddleware } from "./middlewares/error.middleware";
 
 export const app = express();
 
-
 app.use(helmet());
 app.use(morgan("dev"));
 app.use(cors());
 app.use(compression());
 app.use(express.json());
 
-
-app.use("/api/v1", v1Routes);
-
+app.use("/api", v1Routes);
 
 app.use(errorMiddleware);
