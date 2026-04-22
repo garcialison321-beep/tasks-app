@@ -1,32 +1,34 @@
-import { UsersRepository } from "./users.repository";
+import { getDb } from "../../config/database";
 import { hashPassword } from "../../libs/bcrypt";
 
 export class UsersService {
-  private repository = new UsersRepository();
 
-  async register(data: any) {
-    const exists = await this.repository.findByEmail(data.email);
+  async findAll() {
+    const db = getDb();
+    return await db.collection("users").find().toArray();
+  }
 
-    if (exists) {
-      throw new Error("El usuario ya existe");
-    }
+  async findByEmail(email: string) {
+    const db = getDb();
+    return await db.collection("users").findOne({ email });
+  }
+
+  async create(data: any) {
+    const db = getDb();
 
     const hashedPassword = await hashPassword(data.password);
 
-    const user = {
-      name: data.name,
-      email: data.email,
+    const newUser = {
+      ...data,
       password: hashedPassword,
       role: "user",
-      isActive: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
     };
 
-    return await this.repository.create(user);
-  }
+    const result = await db.collection("users").insertOne(newUser);
 
-  async findAllUsers() {
-    return await this.repository.findAllUsers();
+    return {
+      _id: result.insertedId,
+      ...newUser,
+    };
   }
 }

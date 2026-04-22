@@ -1,28 +1,29 @@
-import { Request, Response, NextFunction } from "express";
-import { TasksService } from "./tasks.service";
+import { Request, Response } from "express";
 
 export class TasksController {
-  private service = new TasksService();
 
-  create = async (req: Request, res: Response, next: NextFunction) => {
+  async getTasks(req: Request, res: Response) {
     try {
-      const userId = (req as any).user?.sub;
-
-      const task = await this.service.create(req.body, userId);
-
-      res.status(201).json(task);
+      return res.json({
+        message: "Lista de tareas",
+      });
     } catch (error) {
-      next(error);
+      return res.status(500).json({
+        message: "Error al obtener tareas",
+      });
     }
-  };
+  }
 
-  findAll = async (_req: Request, res: Response) => {
-    const tasks = await this.service.findAll();
-    res.json(tasks);
-  };
-
-  delete = async (req: Request, res: Response) => {
-    await this.service.delete(req.params.id);
-    res.json({ message: "Tarea eliminada" });
-  };
+  async createTask(req: Request, res: Response) {
+    try {
+      return res.json({
+        message: "Tarea creada",
+        data: req.body,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        message: "Error al crear tarea",
+      });
+    }
+  }
 }

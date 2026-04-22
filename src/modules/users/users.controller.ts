@@ -2,21 +2,36 @@ import { Request, Response } from "express";
 import { UsersService } from "./users.service";
 
 export class UsersController {
+  private userService = new UsersService();
 
-    private _UsersService = new UsersService();
+  async findAllUsers(req: Request, res: Response) {
+    try {
+      const users: any[] = await this.userService.findAll();
 
-    register = async (req: Request, res: Response) => {
+      const usersWithoutPassword = users.map((user: any) => {
+        const { password, ...rest } = user;
+        return rest;
+      });
 
-        const result = await this._UsersService.register(req.body);
-
-        res.status(201).json(result)
+      return res.json(usersWithoutPassword);
+    } catch (error) {
+      return res.status(500).json({
+        message: "Error al obtener usuarios",
+      });
     }
+  }
 
-    findAllUsers = async (req: Request, res: Response) => {
+  async register(req: Request, res: Response) {
+    try {
+      const user: any = await this.userService.create(req.body);
 
-        const result = await this._UsersService.findAllUsers();
+      const { password, ...userWithoutPassword } = user;
 
-        res.status(200).json(result)
+      return res.json(userWithoutPassword);
+    } catch (error) {
+      return res.status(500).json({
+        message: "Error al crear usuario",
+      });
     }
-
+  }
 }
