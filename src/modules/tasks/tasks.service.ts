@@ -1,30 +1,92 @@
-import { TasksRepository } from "./tasks.repository";
-import { Task } from "./tasks.model";
+import { ObjectId } from "mongodb";
+import { getDb } from "../../config/database";
 
 export class TasksService {
-  private repository = new TasksRepository();
 
-  async create(data: any, userId: string): Promise<Task> {
-    const now = new Date();
+  async create(data: any, userId: string) {
 
-    const task: Task = {
+    const db = getDb();
+
+    const newTask = {
+
       title: data.title,
+
       description: data.description,
+
       projectId: data.projectId,
-      createdBy: userId,
-      isActive: true,
-      createdAt: now,
-      updatedAt: now,
+
+      priority: data.priority,
+
+      status: data.status,
+
+      createdBy: new ObjectId(userId),
+
+      createdAt: new Date(),
     };
 
-    return await this.repository.create(task);
+    const result =
+      await db.collection("tasks")
+      .insertOne(newTask);
+
+    return {
+      _id: result.insertedId,
+      ...newTask,
+    };
   }
 
-  async findAll(): Promise<Task[]> {
-    return await this.repository.findAll();
+  async findAll() {
+
+    const db = getDb();
+
+    return await db
+      .collection("tasks")
+      .find()
+      .toArray();
+  }
+
+  async findById(id: string) {
+
+    const db = getDb();
+
+    return await db
+      .collection("tasks")
+      .findOne({
+        _id: new ObjectId(id),
+      });
+  }
+
+  async findByProject(projectId: string) {
+
+    const db = getDb();
+
+    return await db
+      .collection("tasks")
+      .find({
+        projectId: projectId,
+      })
+      .toArray();
+  }
+
+  async findByUser(userId: string) {
+
+    const db = getDb();
+
+    return await db
+      .collection("tasks")
+      .find({
+        createdBy: new ObjectId(userId),
+      })
+      .toArray();
   }
 
   async delete(id: string) {
-    return await this.repository.delete(id);
+
+    const db = getDb();
+
+    return await db
+      .collection("tasks")
+      .deleteOne({
+        _id: new ObjectId(id),
+      });
   }
 }
